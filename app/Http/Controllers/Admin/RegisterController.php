@@ -5,18 +5,30 @@ namespace App\Http\Controllers\Admin;
 use Validator;
 use App\Models\Admin;
 use App\Http\Controllers\Controller;
-
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class RegisterController extends Controller
 {
+    /**
+     * RegisterController constructor.
+     */
+    public function __construct()
+    {
+    }
 
+    /**
+     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
+     */
     public function getRegister()
     {
         return view('admin.register');
     }
 
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Routing\Redirector
+     */
     public function postRegister(Request $request)
     {
         $this->validator($request->all())->validate();

@@ -8,11 +8,19 @@ use App\Http\Controllers\Controller;
 
 class LoginController extends Controller
 {
-//    protected $redirectTo = '/xxx';
+    /**
+     * 当前认证角色
+     * @var string
+     */
+    protected $guard = 'admin';
 
+    /**
+     * 构造函数
+     * LoginController constructor.
+     */
     public function __construct()
     {
-        $this->middleware('guest', ['except' => 'Logout']);
+        $this->middleware('guest', ['except' => 'logout']);
     }
 
     public function getLogin()
@@ -23,15 +31,11 @@ class LoginController extends Controller
     public function postLogin(Request $request)
     {
         $this->validateLogin($request);
-
         $credentials = $this->credentials($request);
-
-        if (Auth::attempt($credentials, $request->has('remember'))) {
+        if (Auth::guard($this->guard)->attempt($credentials, $request->has('remember'))) {
             return $this->sendLoginResponse($request);
         }
         return $this->sendFailedLoginResponse($request);
-
-        //  return redirect(route('admin.login'))->withInput($request->except('password'))->with('msg', '用户名或密码错误');
     }
 
     /**
@@ -44,6 +48,10 @@ class LoginController extends Controller
         ]);
     }
 
+    /**
+     * @param Request $request
+     * @return array
+     */
     protected function credentials(Request $request)
     {
         $identity = $request->only('email', 'password');
@@ -51,14 +59,15 @@ class LoginController extends Controller
         return $identity;
     }
 
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
     protected function sendLoginResponse(Request $request)
     {
         $request->session()->regenerate();
-
-        //$this->clearLoginAttempts($request);
-
         return $this->authenticated($request, $this->guard()->user())
-            ?: redirect()->intended(route('admin.index'));
+            ?: redirect()->intended(route('index'));
     }
 
     protected function authenticated(Request $request, $user)
@@ -68,7 +77,7 @@ class LoginController extends Controller
 
     protected function guard()
     {
-        return Auth::guard('admin');
+        return Auth::guard($this->guard);
     }
 
     protected function sendFailedLoginResponse(Request $request)
@@ -80,16 +89,11 @@ class LoginController extends Controller
             ]);
     }
 
-    protected function Logout(Request $request)
+    protected function logout(Request $request)
     {
-
         $this->guard()->logout();
-
         $request->session()->flush();
-
         $request->session()->regenerate();
-
-
-        return redirect()->route('admin.index');
+        return redirect()->route('index');
     }
 }
